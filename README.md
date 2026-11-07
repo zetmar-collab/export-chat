@@ -101,3 +101,7 @@ mkdir -p ~/.codex/skills/export-chat && cp SKILL.md ~/.codex/skills/export-chat/
 ```
 
 Start a new session so the skill is picked up.
+
+## License
+
+[MIT](LICENSE)
