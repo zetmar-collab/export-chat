@@ -62,12 +62,28 @@ This skill is for a full transcript. For a summary of the conversation, ask for 
   survive backticks inside the content.
 - **Long transcripts** are written in parts and appended in order.
 
+## Bundled script (Claude Code)
+
+`scripts/export_session.py` reads the complete session log that Claude Code keeps on disk
+(`~/.claude/projects/<folder>/<session-id>.jsonl`) and writes the transcript without relying on
+what the model still remembers, so compacted or very long sessions are exported in full. It uses
+only the Python 3 standard library. The skill runs it automatically; you can also run it yourself:
+
+```bash
+python scripts/export_session.py --session <session-id> --out-dir ./chat-exports
+python scripts/export_session.py --help
+```
+
+It skips thinking blocks, hook/system records and sub-agent activity, drops the final export
+request, redacts secrets, truncates huge tool results, and never overwrites an existing file.
+
 ## Limitations
 
-- The transcript is built from the conversation available in the model's context. If the
-  session was compacted, the skill adds a note at the top. In Claude Code it may try to
-  recover earlier turns from the session log (`~/.claude/projects/<folder>/<session>.jsonl`);
-  if that fails, those turns are simply missing and the skill says so rather than inventing them.
+- Without the script (Codex, or no Python), the transcript is built from the conversation
+  available in the model's context. If the session was compacted, the skill adds a note at the
+  top and says so rather than inventing the missing turns.
+- The script reads Claude Code's log format, which is not a documented public format and may
+  change between versions.
 - Redaction is pattern-based and best-effort. Check the exported file before sharing it.
 - The export lands in your working directory, which may be a git repository. The skill does not
   touch `.gitignore` or commit the file; add `chat-exports/` to `.gitignore` yourself if needed.

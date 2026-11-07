@@ -9,7 +9,40 @@ Create a faithful Markdown transcript of the entire available conversation histo
 and save it as a file. The transcript is a record, not a summary: user and assistant
 messages are copied verbatim, never paraphrased or shortened.
 
-## Step 1 - Gather environment facts with a tool
+## Preferred method in Claude Code: run the bundled script
+
+Claude Code stores the complete session on disk, including turns that were later
+compacted out of your context. `scripts/export_session.py` (next to this file) turns that
+log into the Markdown transcript deterministically, so nothing depends on what you still
+remember. Use it first; it needs only Python 3 and no extra packages.
+
+From the working directory of the session, run (use `python3` or `py -3` if `python`
+is not available):
+
+```
+python -I "<skill folder>/scripts/export_session.py" --session <session id>
+```
+
+- `<skill folder>` is the directory containing this SKILL.md, normally
+  `~/.claude/skills/export-chat`.
+- `--session` takes the session id, which is the UUID in the scratchpad path of the
+  environment context (and the log's file name). Always pass it when known: without it the
+  script takes the newest log for the working directory, which may belong to another
+  session running in the same folder.
+- Useful options: `--out-dir <folder>` for a user-chosen location, `--max-result <n>` /
+  `--max-input <n>` to change truncation (0 = unlimited), `--include-sidechains` to
+  include sub-agent activity. Run with `--help` for the rest.
+
+The script applies the filename, collision, redaction, exclusion, and fence rules below by
+itself, and drops everything after the user's export request. Afterwards go straight to
+Step 5 (verify and report) using the numbers it prints.
+
+If you are not in Claude Code (for example Codex), if Python is missing, or if the script
+fails, tell the user why in one line and fall back to the manual method in Steps 1-4.
+
+## Manual method (fallback)
+
+### Step 1 - Gather environment facts with a tool
 
 Do not guess the date, time, or working directory; read them from the system.
 
@@ -22,7 +55,7 @@ Do not guess the date, time, or working directory; read them from the system.
 If no shell tool is available, use the date and working directory from the environment
 context and say in the report that the time was approximate.
 
-## Step 2 - Choose the output path
+### Step 2 - Choose the output path
 
 1. Default location: `chat-exports/` inside the current working directory. Create it if
    it does not exist. If the user names a different folder or file name, use theirs.
@@ -32,7 +65,7 @@ context and say in the report that the time was approximate.
    If it exists, append `-1`, `-2`, and so on before `.md` until the name is free.
    Never overwrite or modify any existing file.
 
-## Step 3 - Collect the history
+### Step 3 - Collect the history
 
 Use the conversation as it is available in your context. The scope is everything from
 the first message up to and including the user's export request (the current turn).
@@ -46,7 +79,7 @@ messages, assistant text, and tool calls/results from it, and still apply every
 exclusion below. If you cannot recover the early turns, add the compaction note
 described under Completeness rules instead of inventing them.
 
-## Step 4 - Write the transcript
+### Step 4 - Write the transcript
 
 Use this structure:
 
@@ -128,7 +161,7 @@ which part is missing.
   non-ASCII characters survive. Check this after writing if you used a shell redirect,
   because Windows PowerShell 5 may default to UTF-16.
 
-## Step 5 - Verify and report
+## Step 5 - Verify and report (both methods)
 
 Read back the first lines and the size of the file to confirm it was written, then
 report to the user:
